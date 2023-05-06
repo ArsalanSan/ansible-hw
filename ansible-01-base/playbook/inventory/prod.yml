@@ -1,0 +1,19 @@
+---
+  el:
+    hosts:
+      centos7:
+        ansible_connection: docker
+  deb:
+    hosts:
+      ubuntu:
+        ansible_connection: docker
+          #        ansible_python_interpreter: /usr/bin/python
+  local:
+    hosts:
+      local:
+        ansible_connection: local
+
+  fed:
+    hosts:
+      fedora:
+        ansible_connection: docker
