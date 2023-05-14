@@ -23,8 +23,8 @@
 9.  Подготовьте README.md-файл по своему playbook. В нём должно быть описано: что делает playbook, какие у него есть параметры и теги.
 10. Готовый playbook выложите в свой репозиторий, поставьте тег `08-ansible-02-playbook` на фиксирующий коммит, в ответ предоставьте ссылку на него.
 
->Готовый проект по [ссылке]()
+>Готовый код [проекта](https://github.com/ArsalanSan/ansible-hw/tree/main/ansible-02-playbook/terraform/playbook)
 > 
 > Общее паяснение к выполненному заданию: 
-> Инфраструктуру разворачиваю с помощью terraform на Yandex Cloud, два ВМа для clickhouse и vector. Так же terraform создает из шаблона inventory файл и конфигурационый файл для vectora. В inventory файл подставляет внешний ip адрес для подключения ansible, а в кофигурационый файл vectora подставляет внутрений ip адрес для подключения к clickhouse. 
+> Инфраструктуру разворачиваю с помощью terraform на Ya x bgf6ryndex Cloud, два ВМа для clickhouse и vector. Так же terraform создает из шаблона inventory файл и конфигурационый файл для vectora. В inventory файл подставляет внешний ip адрес для подключения ansible, а в кофигурационый файл vectora подставляет внутрений ip адрес для подключения к clickhouse. 
 >   Добавил один таск в плейбук clickhouse каторый изменяет параметр в конфигурационый файл clickhouse `<listen_host>0.0.0.0</listen_host>`, без этого параметра не запускался vector.
