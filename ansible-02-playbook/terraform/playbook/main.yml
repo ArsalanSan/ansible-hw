@@ -1,0 +1,164 @@
+---
+
+- name: Install Clickhouse
+  hosts: clickhouse
+  gather_facts: false
+  handlers:
+    - name: Start clickhouse service
+      become: true
+      ansible.builtin.service:
+        name: clickhouse-server
+        state: restarted
+  tasks:
+    - name: Wait for system to become reachable
+      ansible.builtin.wait_for_connection:
+        delay: 15
+
+    - name: Get and install rpm
+      block:
+        - name: Get clickhouse distrib
+          ansible.builtin.get_url:
+            url: "https://packages.clickhouse.com/rpm/stable/{{ item }}-{{ clickhouse_version }}.x86_64.rpm"
+            dest: "./{{ item }}-{{ clickhouse_version }}.rpm"
+            mode: "0644"
+          with_items: "{{ clickhouse_packages }}"
+      rescue:
+        - name: Get clickhouse distrib
+          ansible.builtin.get_url:
+            url: "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
+            dest: "./clickhouse-common-static-{{ clickhouse_version }}.rpm"
+            mode: "0644"
+
+    - name: Install clickhouse packages
+      become: true
+      ansible.builtin.yum:
+        name:
+          - clickhouse-client-{{ clickhouse_version }}.rpm
+          - clickhouse-server-{{ clickhouse_version }}.rpm
+          - clickhouse-common-static-{{ clickhouse_version }}.rpm
+
+    - name: Add parameter in configuration file
+      become: true
+      ansible.builtin.lineinfile:
+        path: /etc/clickhouse-server/config.xml
+        search_string: "<!-- <listen_host>0.0.0.0</listen_host> -->"
+        line: <listen_host>0.0.0.0</listen_host>
+      notify: Start clickhouse service
+
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
+
+    - name: Create database
+      ansible.builtin.command: "clickhouse-client -q 'create database logs;'"
+      register: create_db
+      failed_when: create_db.rc != 0 and create_db.rc != 82
+      changed_when: create_db.rc == 0
+
+- name: Install Vector
+  hosts: vector
+  gather_facts: false
+  tasks:
+    - name: Download tar.gz Vector
+      ansible.builtin.get_url:
+        url: "https://packages.timber.io/vector/{{ vector_version }}/vector-{{ vector_version }}-x86_64-unknown-linux-musl.tar.gz"
+        dest: "/tmp/vector-{{ vector_version }}-x86_64.tar.gz"
+        mode: "0644"
+        timeout: 50
+        force: true
+        validate_certs: false
+      register: get_vector
+      until: get_vector is succeeded
+      tags: vector
+
+    - name: Create temp directrory for Vector
+      become: true
+      ansible.builtin.file:
+        state: directory
+        path: "/tmp/vector"
+        mode: "0755"
+      tags: vector
+
+    - name: Extract arhive Vector
+      become: true
+      ansible.builtin.unarchive:
+        copy: false
+        src: "/tmp/vector-{{ vector_version }}-x86_64.tar.gz"
+        dest: /tmp/vector
+        extra_opts: [--strip-components=2]
+      tags: vector
+
+    - name: Create vector group for Vector
+      become: true
+      ansible.builtin.group:
+        name: "vector"
+        state: present
+      tags: vector
+
+    - name: Create vector user for Vector
+      become: true
+      ansible.builtin.user:
+        name: "vector"
+        group: "vector"
+        shell: /usr/sbin/nologin
+        createhome: true
+      tags: vector
+
+    - name: Copy vector binary file to /usr/bin
+      become: true
+      ansible.builtin.copy:
+        src: /tmp/vector/bin/vector
+        dest: "{{ vector_bin_path }}"
+        owner: root
+        group: root
+        mode: "0755"
+        remote_src: true
+      tags: vector
+
+    - name: Create directrory for enveroment Vector
+      become: true
+      ansible.builtin.file:
+        state: directory
+        path: "{{ vector_env_path }}"
+        owner: "vector"
+        group: "vector"
+        mode: "0755"
+      tags: vector
+
+    - name: Create directrory for config file Vector
+      become: true
+      ansible.builtin.file:
+        state: directory
+        path: "{{ vector_config_path }}"
+        owner: "vector"
+        group: "vector"
+        mode: "0755"
+      tags: vector
+
+    - name: Configure vector
+      become: true
+      ansible.builtin.template:
+        src: "{{ vector_config_file }}"
+        dest: /etc/vector/vector.toml
+        owner: "vector"
+        group: "vector"
+        mode: "0755"
+      tags: vector
+
+    - name: Copy Daemon script
+      become: true
+      ansible.builtin.template:
+        src: "{{ vector_service_file }}"
+        dest: /etc/systemd/system/vector.service
+        mode: "0755"
+        owner: root
+        group: root
+      tags: vector
+
+    - name: Configuring service
+      become: true
+      ansible.builtin.systemd:
+        name: vector
+        state: started
+        enabled: true
+        daemon_reload: true
+      tags: vector

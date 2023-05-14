@@ -1,0 +1,108 @@
+---
+- name: Install Vector
+  hosts: vector
+  tasks:
+    - name: Download tar.gz Vector
+      ansible.builtin.get_url:
+        url: "https://packages.timber.io/vector/{{ vector_version }}/vector-{{ vector_version }}-x86_64-unknown-linux-musl.tar.gz"
+        dest: "/tmp/vector-{{ vector_version }}-x86_64.tar.gz"
+        mode: "644"
+        timeout: 50
+        force: true
+        validate_certs: false
+      register: get_vector
+      until: get_vector is succeeded
+      tags: vector
+
+    - name: Create temp directrory for Vector
+      become: true
+      ansible.builtin.file:
+        state: directory
+        path: "/tmp/vector"
+        mode: "755"
+      tags: vector
+
+    - name: Extract arhive Vector
+      become: true
+      ansible.builtin.unarchive:
+        copy: false
+        src: "/tmp/vector-{{ vector_version }}-x86_64.tar.gz"
+        dest: /tmp/vector
+        extra_opts: [--strip-components=2]
+      tags: vector
+
+    - name: Create vector group for Vector
+      become: true
+      ansible.builtin.group:
+        name: "vector"
+        state: present
+      tags: vector
+
+    - name: Create vector user for Vector
+      become: true
+      ansible.builtin.user:
+        name: "vector"
+        group: "vector"
+        shell: /usr/sbin/nologin
+        createhome: false
+      tags: vector
+
+    - name: Copy vector binary file to /usr/bin
+      become: true
+      ansible.builtin.copy:
+        src: /tmp/vector/bin/vector
+        dest: "{{ vector_bin_path }}"
+        owner: root
+        group: root
+        mode: "755"
+        remote_src: true
+      tags: vector
+
+    - name: Create directrory for enveroment Vector
+      become: true
+      ansible.builtin.file:
+        state: directory
+        path: "{{ vector_env_path }}"
+        owner: "vector"
+        group: "vector"
+        mode: "755"
+      tags: vector
+
+    - name: Create directrory for config file Vector
+      become: true
+      ansible.builtin.file:
+        state: directory
+        path: "{{ vector_config_path }}"
+        owner: "vector"
+        group: "vector"
+        mode: "755"
+      tags: vector
+
+    - name: Configure vector
+      become: true
+      ansible.builtin.template:
+        src: "{{ vector_config_file }}"
+        dest: /etc/vector/vector.toml
+        owner: "vector"
+        group: "vector"
+        mode: "755"
+      tags: vector
+
+    - name: Copy Daemon script
+      become: true
+      ansible.builtin.template:
+        src: "{{ vector_service_file }}"
+        dest: /etc/systemd/system/vector.service
+        owner: root
+        group: root
+        mode: "755"
+      tags: vector
+
+    - name: Configuring service
+      become: true
+      ansible.builtin.systemd:
+        name: vector
+        state: started
+        enabled: true
+        daemon_reload: true
+      tags: vector
