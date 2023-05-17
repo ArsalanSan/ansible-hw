@@ -1,0 +1,16 @@
+---
+clickhouse:
+  hosts:
+    ansible-clickhouse:  
+      ansible_host: 158.160.96.224
+      ansible_user: centos
+vector:
+  hosts:
+    ansible-vector:  
+      ansible_host: 84.201.159.12
+      ansible_user: centos
+lighthouse:
+  hosts:
+    ansible-lighthouse:  
+      ansible_host: 158.160.104.109
+      ansible_user: centos
