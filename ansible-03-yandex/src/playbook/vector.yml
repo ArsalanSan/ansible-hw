@@ -1,0 +1,25 @@
+---
+- name: Install Vector
+  hosts: vector
+  tasks:
+    - name: Vector | install rpm
+      become: true
+      ansible.builtin.yum:
+        name: "https://packages.timber.io/vector/0.29.1/vector-0.29.1-1.x86_64.rpm"
+        state: present
+    - name: Vector | Template config
+      become: true
+      ansible.builtin.template:
+        src: "{{ vector_config_file }}"
+        dest: /etc/vector/vector.toml
+        mode: "0644"
+        owner: "vector"
+        group: "vector"
+        validate: vector validate --no-environment --config-toml %s
+    - name: Vector | Start service
+      become: true
+      ansible.builtin.systemd:
+        name: vector
+        state: started
+        enabled: true
+        daemon_reload: true

@@ -1,0 +1,61 @@
+---
+- name: Install nginx
+  hosts: lighthouse
+  handlers:
+    - name: reload-nginx
+      become: true
+      command: nginx -s reload
+  tasks:
+    - name: NGINX | Install epel-release
+      become: true
+      ansible.builtin.yum:
+        name: epel-release
+        state: present
+    - name: NGINX | Install NGINX
+      become: true
+      ansible.builtin.yum:
+        name: nginx
+        state: present
+    - name: NGINX | Start NGINX
+      become: true
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+        enabled: true
+    - name: NGINX | Create general config
+      become: true
+      ansible.builtin.template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        mode: "0644"
+      notify: reload-nginx
+
+- name: Install lighthouse
+  hosts: lighthouse
+  handlers:
+    - name: reload-nginx
+      become: true
+      command: nginx -s reload
+  pre_tasks:
+    - name: Lighthouse | Install git
+      become: true
+      ansible.builtin.yum:
+        name: git
+        state: present
+  tasks:
+    - name: Lighthouse | Copy from git
+      become: true
+      ansible.builtin.git:
+        repo: "{{ lighthouse_repo }}"
+        dest: "{{ lighthouse_dir }}"
+        version: master
+        # owner: "nginx"
+        # group: "nginx"
+        # mode: "0644"
+    - name: Lighthouse | Create lighthouse config
+      become: true
+      ansible.builtin.template:
+        src: lighthouse.conf.j2
+        dest: /etc/nginx/conf.d/lighthouse.conf
+        mode: "0644"
+      notify: reload-nginx
