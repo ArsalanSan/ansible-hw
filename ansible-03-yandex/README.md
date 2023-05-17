@@ -19,7 +19,7 @@
 9.  Подготовьте README.md-файл по своему playbook. В нём должно быть описано: что делает playbook, какие у него есть параметры и теги.
 10. Готовый playbook выложите в свой репозиторий, поставьте тег `08-ansible-03-yandex` на фиксирующий коммит, в ответ предоставьте ссылку на него.
 
->Готовый код [проекта]() 
+>Готовый код [проекта](https://github.com/ArsalanSan/ansible-hw/tree/main/ansible-03-yandex/src/playbook) 
 
 >Инфраструктуру разворачиваю с помощью terraform на Yandex Cloud, создаю 3 ВМ для clickhouse, vector и lighthouse. С посмощью terraform создаю из шаблона inventory файл и конфигурационые файлы.  
 
