@@ -1,0 +1,20 @@
+---
+- name: Install Clickhouse
+  hosts: clickhouse
+  gather_facts: false
+  tasks:
+    - name: Clickhouse | Wait for system to become reachable
+      ansible.builtin.wait_for_connection:
+        delay: 10
+- name: Clickhouse | Install
+  hosts: clickhouse
+  roles:
+    - clickhouse
+- name: Vector | Install 
+  hosts: vector
+  roles:
+    - vector
+- name: Lighthouse | Install
+  hosts: lighthouse
+  roles:
+    - lighthouse
