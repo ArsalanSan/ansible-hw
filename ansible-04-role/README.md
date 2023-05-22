@@ -38,9 +38,14 @@
 11. В ответе дайте ссылки на оба репозитория с roles и одну ссылку на репозиторий с playbook.
 
 ---
+> Роли:
+> - [Vector](https://github.com/ArsalanSan/ansible_vector_role.git)
+> - [Clickhouse](https://github.com/ArsalanSan/ansible_role_clickhouse.git)
+> - [Lighthouse](https://github.com/ArsalanSan/ansible_role_lighthouse.git)
 
-### Как оформить решение задания
+> Готовый [Playbook](https://github.com/ArsalanSan/ansible-hw/tree/main/ansible-04-role/src/playbook)
 
-Выполненное домашнее задание пришлите в виде ссылки на .md-файл в вашем репозитории.
+> Inventory и конфигурационные файлы формируется с помощью terraform, единственное что нужно сделать заменить конфигурационные файлы 
+> на хостах из папки templates разположенный в корне terraform
 
 ---
