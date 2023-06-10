@@ -41,7 +41,7 @@
 
 ---
 
-[bug xml]()
-[all xml]()
+* [bug xml](https://github.com/ArsalanSan/ansible-hw/blob/main/09-ci-01-intro/src/KANBAN-10.xml)
+* [all xml](https://github.com/ArsalanSan/ansible-hw/blob/main/09-ci-01-intro/src/KANBAN-9.xml)
 
 ---
