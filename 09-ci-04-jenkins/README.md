@@ -6,27 +6,31 @@
 2. Установить Jenkins при помощи playbook.
 3. Запустить и проверить работоспособность.
 4. Сделать первоначальную настройку.
+   
+   ![](img/pre_1.png)
 
 ## Основная часть
 
+![](img/0_1.png)
+
 1. Сделать Freestyle Job, который будет запускать `molecule test` из любого вашего репозитория с ролью.
+   ![](img/1_1.png)
+   ![](img/1_2.png)
 2. Сделать Declarative Pipeline Job, который будет запускать `molecule test` из любого вашего репозитория с ролью.
+   ![](img/2_1.png)
 3. Перенести Declarative Pipeline в репозиторий в файл `Jenkinsfile`.
+   > https://github.com/ArsalanSan/ansible_vector_role/blob/main/Jenkinsfile
 4. Создать Multibranch Pipeline на запуск `Jenkinsfile` из репозитория.
+   ![](img/4_1.png)
 5. Создать Scripted Pipeline, наполнить его скриптом из [pipeline](./pipeline).
 6. Внести необходимые изменения, чтобы Pipeline запускал `ansible-playbook` без флагов `--check --diff`, если не установлен параметр при запуске джобы (prod_run = True). По умолчанию параметр имеет значение False и запускает прогон с флагами `--check --diff`.
+   ![](img/6_1.png)
+   ![](img/6_2.png)
 7. Проверить работоспособность, исправить ошибки, исправленный Pipeline вложить в репозиторий в файл `ScriptedJenkinsfile`.
+   > https://github.com/ArsalanSan/ansible-hw/blob/main/09-ci-04-jenkins/ScriptedJenkins
 8. Отправить ссылку на репозиторий с ролью и Declarative Pipeline и Scripted Pipeline.
+   > Ссылка нв [роль](https://github.com/ArsalanSan/ansible_vector_role.git)
+   
+   > [Declarative Pipeline](https://github.com/ArsalanSan/ansible_vector_role/blob/main/Jenkinsfile)
 
-## Необязательная часть
-
-1. Создать скрипт на groovy, который будет собирать все Job, завершившиеся хотя бы раз неуспешно. Добавить скрипт в репозиторий с решением и названием `AllJobFailure.groovy`.
-2. Создать Scripted Pipeline так, чтобы он мог сначала запустить через Yandex Cloud CLI необходимое количество инстансов, прописать их в инвентори плейбука и после этого запускать плейбук. Мы должны при нажатии кнопки получить готовую к использованию систему.
-
----
-
-### Как оформить решение задания
-
-Выполненное домашнее задание пришлите в виде ссылки на .md-файл в вашем репозитории.
-
----
+   > [Scripted Pipeline](https://github.com/ArsalanSan/ansible-hw/blob/main/09-ci-04-jenkins/ScriptedJenkins)
