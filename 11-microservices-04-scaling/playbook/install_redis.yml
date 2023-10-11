@@ -1,0 +1,115 @@
+---
+
+- name: Install Redis in Almalinux 9
+  hosts: all
+#  gather_facts: false
+  become: true
+  tasks:
+    - name: Disable selinux
+      ansible.posix.selinux:
+        state: disabled
+
+    - name: Install redis
+      ansible.builtin.dnf:
+        name:
+         - redis
+
+    - name: Copy configuration files Redis
+      ansible.builtin.copy:
+        src: ./redis_conf/
+        dest: /etc/redis/
+        owner: redis
+        group: redis
+        mode: '0755'
+
+    - name: Copy service file
+      ansible.builtin.copy:
+        src: /usr/lib/systemd/system/redis.service
+        dest: /usr/lib/systemd/system/redis-replica.service
+        owner: root
+        group: root
+        mode: '0644'
+        remote_src: true
+
+- name: Setting Redis01 unit
+  hosts: master01
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Setting service unit file for Redis master
+      ansible.builtin.lineinfile:
+        path: /usr/lib/systemd/system/redis.service
+        mode: '0644'
+        regexp: '^ExecStart='
+        insertbefore: BOF
+        line: 'ExecStart=/usr/bin/redis-server /etc/redis/6379.conf --daemonize no --supervised systemd'
+
+    - name: Setting service unit file for Redis replica
+      ansible.builtin.lineinfile:
+        path: /usr/lib/systemd/system/redis-replica.service
+        mode: '0644'
+        regexp: '^ExecStart='
+        insertbefore: BOF
+        line: 'ExecStart=/usr/bin/redis-server /etc/redis/6381.conf --daemonize no --supervised systemd'
+
+- name: Sitting Redis02 unit
+  hosts: master02
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Setting service unit file for Redis master
+      ansible.builtin.lineinfile:
+        path: /usr/lib/systemd/system/redis.service
+        mode: '0644'
+        regexp: '^ExecStart='
+        insertbefore: BOF
+        line: 'ExecStart=/usr/bin/redis-server /etc/redis/6380.conf --daemonize no --supervised systemd'
+
+    - name: Setting service unit file for Redis replica
+      ansible.builtin.lineinfile:
+        path: /usr/lib/systemd/system/redis-replica.service
+        mode: '0644'
+        regexp: '^ExecStart='
+        insertbefore: BOF
+        line: 'ExecStart=/usr/bin/redis-server /etc/redis/6379.conf --daemonize no --supervised systemd'
+
+- name: Sitting Redis03 unit
+  hosts: master03
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Setting service unit file for Redis master
+      ansible.builtin.lineinfile:
+        path: /usr/lib/systemd/system/redis.service
+        mode: '0644'
+        regexp: '^ExecStart='
+        insertbefore: BOF
+        line: 'ExecStart=/usr/bin/redis-server /etc/redis/6381.conf --daemonize no --supervised systemd'
+
+    - name: Setting service unit file for Redis replica
+      ansible.builtin.lineinfile:
+        path: /usr/lib/systemd/system/redis-replica.service
+        mode: '0644'
+        regexp: '^ExecStart='
+        insertbefore: BOF
+        line: 'ExecStart=/usr/bin/redis-server /etc/redis/6380.conf --daemonize no --supervised systemd'
+
+- name: Run Redis services
+  hosts: all
+  become: true
+  tasks:
+    - name: Daemon reload
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Start and enable redis
+      ansible.builtin.systemd:
+        name: redis
+        state: started
+        enabled: true
+
+    - name: Start and enable redis replica
+      ansible.builtin.systemd:
+        name: redis-replica
+        state: started
+        enabled: true
